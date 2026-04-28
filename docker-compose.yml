@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    image: news-classifier:local
+    container_name: news_classifier_api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount local model artifacts without rebuilding the image
+      - ./models:/app/models:ro
+    env_file:
+      - .env
+    environment:
+      LOG_FORMAT: "text"   # Human-readable logs for local dev
+      DEBUG: "true"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/news/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── Optional: add Prometheus + Grafana here for metrics ───────────────
+
+volumes: {}

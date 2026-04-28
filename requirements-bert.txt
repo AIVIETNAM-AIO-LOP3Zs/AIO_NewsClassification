@@ -1,0 +1,6 @@
+# Install this file to enable the BERT backend:
+#   pip install -r requirements-bert.txt
+torch>=2.2.0
+transformers>=4.40.0
+sentencepiece>=0.2.0
+accelerate>=0.29.0

@@ -216,3 +216,15 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# BBC News Classifier — ML artifacts (never commit trained artifacts)
+models/tfidf/*.pkl
+models/tfidf/*.joblib
+models/bert/
+!models/bert/.gitkeep
+!models/tfidf/.gitkeep
+# Keep the top-level README
+!models/README.md
+
+# Environment secrets
+.env
