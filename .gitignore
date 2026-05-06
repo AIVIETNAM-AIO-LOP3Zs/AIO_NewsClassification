@@ -1,0 +1,8 @@
+.ipynb_checkpoints/
+.vscode/
+business/
+entertainment/
+politics/
+sport/
+tech/
+.DS_Store
