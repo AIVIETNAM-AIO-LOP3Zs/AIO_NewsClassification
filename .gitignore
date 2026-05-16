@@ -228,3 +228,5 @@ models/bert/
 
 # Environment secrets
 .env
+
+*.txt
