@@ -7,11 +7,13 @@ Lifespan context
 - shutdown: release all ML artifacts
 """
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.v1.api import api_router
 from app.core.config import get_settings
@@ -23,6 +25,9 @@ settings = get_settings()
 # Logging must be set up before the first log call
 setup_logging(log_level=settings.LOG_LEVEL, log_format=settings.LOG_FORMAT)
 logger = get_logger(__name__)
+
+# Path to the frontend static files
+STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 
 # ── Lifespan ──────────────────────────────────────────────────────────────
@@ -78,10 +83,15 @@ def create_app() -> FastAPI:
     # ── Routers ───────────────────────────────────────────────────────────
     app.include_router(api_router, prefix=settings.API_PREFIX)
 
-    # ── Root → Swagger ────────────────────────────────────────────────────
+    # ── Frontend SPA ──────────────────────────────────────────────────────
+    # Serve CSS / JS / image assets at /static/…
+    if STATIC_DIR.exists():
+        app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+    # Root → serve the SPA index.html (Swagger stays at /docs)
     @app.get("/", include_in_schema=False)
-    async def root() -> RedirectResponse:
-        return RedirectResponse(url="/docs")
+    async def root() -> FileResponse:
+        return FileResponse(str(STATIC_DIR / "index.html"))
 
     return app
 

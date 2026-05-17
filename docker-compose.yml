@@ -20,12 +20,26 @@ services:
       DEBUG: "true"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/news/health"]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/news/health')"]
+      interval: 10s
+      timeout: 5s
       retries: 3
-      start_period: 15s
+      start_period: 5s
 
-  # ── Optional: add Prometheus + Grafana here for metrics ───────────────
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: news_classifier_ngrok
+    restart: unless-stopped
+    command:
+      - "http"
+      - "api:8000"
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    ports:
+      - "4040:4040"
+    depends_on:
+      api:
+        condition: service_healthy
 
 volumes: {}
+

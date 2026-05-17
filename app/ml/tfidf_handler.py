@@ -163,9 +163,16 @@ class TFIDFClassifier(BaseClassifier):
     def _get_proba(self, X) -> np.ndarray:
         if hasattr(self._model, "predict_proba"):
             return self._model.predict_proba(X)[0]
-        df = self._model.decision_function(X)[0]
-        p = 1 / (1 + np.exp(-np.asarray(df)))
-        return np.array([1 - p, p])
+        # Multi-class LinearSVC: decision_function → softmax approximation
+        df = np.asarray(self._model.decision_function(X))
+        if df.ndim == 1:
+            # Binary case
+            p = 1 / (1 + np.exp(-df))
+            return np.array([1 - p, p])
+        # Multi-class: apply softmax for pseudo-probabilities
+        df = df[0]  # shape: (n_classes,)
+        e = np.exp(df - df.max())  # numerical stability
+        return e / e.sum()
 
     def _resolve_label(self, raw_pred) -> str:
         if self._label_encoder is not None:

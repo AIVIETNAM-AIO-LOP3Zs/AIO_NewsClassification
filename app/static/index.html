@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-powered BBC News Classification system supporting TF-IDF SVC and BERT models with real-time model switching.">
+
+    <title>AI News Classifier — BBC Classification</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <!-- Animated background blobs -->
+    <div class="bg-blob bg-blob--1" aria-hidden="true"></div>
+    <div class="bg-blob bg-blob--2" aria-hidden="true"></div>
+    <div class="bg-blob bg-blob--3" aria-hidden="true"></div>
+
+    <main class="app-container">
+        <div class="glass-card">
+
+            <!-- ── Header ──────────────────────────────────────────── -->
+            <header class="app-header">
+                <h1 class="app-header__title">AI News Classifier</h1>
+                <p class="app-header__subtitle">Phân loại tin tức BBC vào 5 chuyên mục — chuyển đổi mô hình ngay trên giao diện</p>
+            </header>
+
+            <!-- ── Model Toggle ────────────────────────────────────── -->
+            <div class="model-toggle" role="radiogroup" aria-label="Chọn mô hình phân loại">
+                <button
+                    class="model-toggle__btn is-active"
+                    id="btn-tfidf"
+                    role="radio"
+                    aria-checked="true"
+                    type="button"
+                >
+                    TF-IDF SVC
+                    <span class="model-toggle__label">Lightweight · CPU</span>
+                </button>
+                <button
+                    class="model-toggle__btn"
+                    id="btn-bert"
+                    role="radio"
+                    aria-checked="false"
+                    type="button"
+                >
+                    BERT
+                    <span class="model-toggle__label">Deep Learning · GPU</span>
+                </button>
+            </div>
+
+            <!-- Active route display -->
+            <div class="active-route" aria-live="polite">
+                Route: <span class="active-route__url" id="active-route-url">/api/v1/news/classify/tfidf</span>
+            </div>
+
+            <!-- ── Classification Form ─────────────────────────────── -->
+            <form id="classify-form" autocomplete="off">
+                <div class="form-group">
+                    <label class="form-label" for="news-content">Nội dung bài viết tin tức</label>
+                    <textarea
+                        class="form-textarea"
+                        id="news-content"
+                        placeholder="Dán nội dung bài báo tiếng Anh vào đây để phân loại...&#10;&#10;Ví dụ: Arsenal clinched the Premier League title on Sunday after a stunning comeback victory at the Emirates Stadium..."
+                        required
+                    ></textarea>
+                </div>
+
+                <button class="btn-classify" id="btn-submit" type="submit">
+                    <span id="btn-submit-text">Phân Loại Ngay</span>
+                </button>
+            </form>
+
+            <!-- ── Results (injected by JS) ─────────────────────────── -->
+            <div id="results-section"></div>
+
+        </div>
+
+        <!-- ── Footer ──────────────────────────────────────────────── -->
+        <footer class="app-footer">
+            <p>BBC News Classifier · <a href="/docs" target="_blank">API Docs (Swagger)</a></p>
+        </footer>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

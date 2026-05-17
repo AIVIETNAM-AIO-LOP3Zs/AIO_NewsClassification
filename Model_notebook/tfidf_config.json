@@ -1,0 +1,11 @@
+{
+  "ngram_range": [
+    1,
+    2
+  ],
+  "min_df": 2,
+  "max_df": 0.85,
+  "sublinear_tf": true,
+  "norm": "l2",
+  "fit_on": "train only"
+}

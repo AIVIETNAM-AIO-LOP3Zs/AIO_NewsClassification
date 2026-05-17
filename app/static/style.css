@@ -1,0 +1,563 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   AI BBC News Classifier — Premium Glassmorphism Dark Theme
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Design Tokens ──────────────────────────────────────────────────────── */
+:root {
+    /* Background */
+    --bg-gradient: linear-gradient(135deg, #0a0e1a 0%, #111638 50%, #0d1117 100%);
+
+    /* Glass surfaces */
+    --glass-bg: rgba(255, 255, 255, 0.025);
+    --glass-bg-hover: rgba(255, 255, 255, 0.04);
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-border-focus: rgba(129, 140, 248, 0.35);
+
+    /* Typography */
+    --text-primary: #f1f5f9;
+    --text-secondary: #8892b0;
+    --text-muted: #5a6480;
+
+    /* Accent palette */
+    --accent-indigo: #818cf8;
+    --accent-cyan: #22d3ee;
+    --accent-emerald: #34d399;
+    --accent-rose: #fb7185;
+    --accent-amber: #fbbf24;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+    --gradient-cta: linear-gradient(135deg, #818cf8 0%, #22d3ee 100%);
+    --gradient-text: linear-gradient(to right, #a5b4fc, #38bdf8);
+
+    /* Category colors */
+    --cat-sport: #34d399;
+    --cat-business: #fbbf24;
+    --cat-politics: #fb7185;
+    --cat-tech: #818cf8;
+    --cat-entertainment: #22d3ee;
+
+    /* Spacing & Radius */
+    --radius-sm: 12px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-pill: 50px;
+
+    /* Transitions */
+    --ease-spring: cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.2s var(--ease-spring);
+    --transition-normal: all 0.3s var(--ease-spring);
+    --transition-slow: all 0.6s var(--ease-spring);
+}
+
+/* ── Reset & Base ───────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 2rem 1.5rem;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* ── Animated Background Blobs ──────────────────────────────────────────── */
+.bg-blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+    animation: blobFloat 20s ease-in-out infinite;
+}
+
+.bg-blob--1 {
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
+    top: -15%;
+    left: -10%;
+}
+
+.bg-blob--2 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(34, 211, 238, 0.15) 0%, transparent 70%);
+    bottom: -10%;
+    right: -8%;
+    animation-delay: -7s;
+}
+
+.bg-blob--3 {
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(251, 113, 133, 0.1) 0%, transparent 70%);
+    top: 40%;
+    left: 50%;
+    animation-delay: -14s;
+}
+
+@keyframes blobFloat {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -20px) scale(1.05); }
+    66% { transform: translate(-20px, 15px) scale(0.95); }
+}
+
+/* ── Main Container ─────────────────────────────────────────────────────── */
+.app-container {
+    width: 100%;
+    max-width: 720px;
+    position: relative;
+    z-index: 10;
+}
+
+/* ── Glass Card ─────────────────────────────────────────────────────────── */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    box-shadow:
+        0 32px 64px -16px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.app-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.app-header__title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+}
+
+.app-header__subtitle {
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+/* ── Model Toggle ───────────────────────────────────────────────────────── */
+.model-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 5px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--glass-border);
+}
+
+.model-toggle__btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.model-toggle__btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-pill);
+    background: var(--gradient-primary);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.model-toggle__btn.is-active {
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 24px -6px rgba(99, 102, 241, 0.45);
+}
+
+.model-toggle__btn.is-active::before {
+    opacity: 1;
+}
+
+.model-toggle__btn:not(.is-active):hover {
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.model-toggle__label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.model-toggle__btn.is-active .model-toggle__label {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ── Active model badge ─────────────────────────────────────────────────── */
+.active-route {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    letter-spacing: 0.02em;
+}
+
+.active-route__url {
+    color: var(--accent-indigo);
+    font-weight: 600;
+}
+
+/* ── Form ───────────────────────────────────────────────────────────────── */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.form-textarea {
+    width: 100%;
+    min-height: 160px;
+    background: rgba(10, 14, 26, 0.6);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 1.125rem;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    resize: vertical;
+    outline: none;
+    transition: var(--transition-normal);
+}
+
+.form-textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.form-textarea:focus {
+    border-color: var(--glass-border-focus);
+    box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.08);
+    background: rgba(10, 14, 26, 0.8);
+}
+
+/* ── Submit Button ──────────────────────────────────────────────────────── */
+.btn-classify {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--gradient-cta);
+    color: #fff;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    box-shadow: 0 12px 32px -8px rgba(99, 102, 241, 0.35);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-classify::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+}
+
+.btn-classify:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 40px -8px rgba(99, 102, 241, 0.5);
+}
+
+.btn-classify:hover::after {
+    transform: translateX(100%);
+}
+
+.btn-classify:active {
+    transform: translateY(0);
+}
+
+.btn-classify:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ── Spinner ────────────────────────────────────────────────────────────── */
+.spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.65s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Results Panel ──────────────────────────────────────────────────────── */
+.results {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--glass-border);
+    animation: fadeSlideUp 0.5s var(--ease-spring) both;
+}
+
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.results__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.results__category {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.category-badge {
+    padding: 0.45rem 1.2rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.95rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border: 1px solid;
+}
+
+/* Category-specific colors */
+.category-badge[data-category="sport"] {
+    background: rgba(52, 211, 153, 0.1);
+    border-color: rgba(52, 211, 153, 0.25);
+    color: var(--cat-sport);
+}
+.category-badge[data-category="business"] {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.25);
+    color: var(--cat-business);
+}
+.category-badge[data-category="politics"] {
+    background: rgba(251, 113, 133, 0.1);
+    border-color: rgba(251, 113, 133, 0.25);
+    color: var(--cat-politics);
+}
+.category-badge[data-category="tech"] {
+    background: rgba(129, 140, 248, 0.1);
+    border-color: rgba(129, 140, 248, 0.25);
+    color: var(--cat-tech);
+}
+.category-badge[data-category="entertainment"] {
+    background: rgba(34, 211, 238, 0.1);
+    border-color: rgba(34, 211, 238, 0.25);
+    color: var(--cat-entertainment);
+}
+
+.results__confidence {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.results__confidence-value {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.results__meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding: 0.6rem 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.results__model-tag {
+    color: var(--accent-indigo);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* ── Probability Bars ───────────────────────────────────────────────────── */
+.prob-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.prob-item {
+    animation: fadeSlideUp 0.4s var(--ease-spring) both;
+}
+
+.prob-item:nth-child(1) { animation-delay: 0.05s; }
+.prob-item:nth-child(2) { animation-delay: 0.10s; }
+.prob-item:nth-child(3) { animation-delay: 0.15s; }
+.prob-item:nth-child(4) { animation-delay: 0.20s; }
+.prob-item:nth-child(5) { animation-delay: 0.25s; }
+
+.prob-item__labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.35rem;
+    font-size: 0.85rem;
+}
+
+.prob-item__name {
+    font-weight: 600;
+    text-transform: capitalize;
+    color: var(--text-primary);
+}
+
+.prob-item__percent {
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.prob-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.prob-bar__fill {
+    height: 100%;
+    border-radius: 6px;
+    width: 0%;
+    transition: width 0.8s var(--ease-spring);
+}
+
+/* Bar category colours */
+.prob-bar__fill[data-category="sport"] { background: var(--cat-sport); }
+.prob-bar__fill[data-category="business"] { background: var(--cat-business); }
+.prob-bar__fill[data-category="politics"] { background: var(--cat-politics); }
+.prob-bar__fill[data-category="tech"] { background: var(--cat-tech); }
+.prob-bar__fill[data-category="entertainment"] { background: var(--cat-entertainment); }
+.prob-bar__fill:not([data-category]) { background: var(--gradient-cta); }
+
+/* ── Error toast ────────────────────────────────────────────────────────── */
+.error-toast {
+    margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
+    background: rgba(251, 113, 133, 0.08);
+    border: 1px solid rgba(251, 113, 133, 0.2);
+    border-radius: var(--radius-sm);
+    color: var(--accent-rose);
+    font-size: 0.9rem;
+    animation: fadeSlideUp 0.3s var(--ease-spring) both;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+.app-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.app-footer a {
+    color: var(--accent-indigo);
+    text-decoration: none;
+}
+
+.app-footer a:hover {
+    text-decoration: underline;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    body {
+        padding: 1rem;
+    }
+
+    .glass-card {
+        padding: 1.75rem 1.25rem;
+        border-radius: var(--radius-md);
+    }
+
+    .app-header__title {
+        font-size: 1.75rem;
+    }
+
+    .model-toggle {
+        flex-direction: column;
+    }
+
+    .results__header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

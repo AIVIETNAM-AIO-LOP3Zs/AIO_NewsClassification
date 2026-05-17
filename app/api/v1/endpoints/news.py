@@ -150,6 +150,95 @@ async def classify_news(
     )
 
 
+# ── Model-Specific Endpoints (Plan §2) ────────────────────────────────────
+
+
+@router.post(
+    "/classify/tfidf",
+    response_model=NewsClassifyResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Classify using TF-IDF SVC model",
+    tags=["Classification"],
+)
+async def classify_tfidf(
+    request: NewsClassifyRequest,
+    svc: ClassificationService = Depends(get_classification_service),
+) -> NewsClassifyResponse:
+    """
+    Classify a BBC news article using the **TF-IDF + LinearSVC** pipeline.
+
+    This is a lightweight, CPU-optimised model ideal for low-latency inference.
+    """
+    try:
+        result: ClassificationResult = svc.classify(request, model_type="tfidf")
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(exc),
+        ) from exc
+    except Exception as exc:
+        logger.exception("Error in TF-IDF classification", error=str(exc))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An internal error occurred during TF-IDF classification.",
+        ) from exc
+
+    logger.info(
+        "TF-IDF classification complete",
+        label=result.label,
+        confidence=result.confidence,
+    )
+    return NewsClassifyResponse(
+        result=result,
+        model_version=svc.model_version("tfidf"),
+    )
+
+
+@router.post(
+    "/classify/bert",
+    response_model=NewsClassifyResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Classify using BERT model",
+    tags=["Classification"],
+)
+async def classify_bert(
+    request: NewsClassifyRequest,
+    svc: ClassificationService = Depends(get_classification_service),
+) -> NewsClassifyResponse:
+    """
+    Classify a BBC news article using the **BERT** transformer model.
+
+    Provides superior accuracy with deep semantic understanding.
+    Heavier on resources — benefits from GPU acceleration.
+    """
+    try:
+        result: ClassificationResult = svc.classify(request, model_type="bert")
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(exc),
+        ) from exc
+    except Exception as exc:
+        logger.exception("Error in BERT classification", error=str(exc))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An internal error occurred during BERT classification.",
+        ) from exc
+
+    logger.info(
+        "BERT classification complete",
+        label=result.label,
+        confidence=result.confidence,
+    )
+    return NewsClassifyResponse(
+        result=result,
+        model_version=svc.model_version("bert"),
+    )
+
+
+# ── Batch (Legacy) ────────────────────────────────────────────────────────
+
+
 @router.post(
     "/classify/batch",
     response_model=NewsBatchResponse,
