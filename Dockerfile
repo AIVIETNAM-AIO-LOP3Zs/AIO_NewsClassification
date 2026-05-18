@@ -9,8 +9,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --upgrade pip \
-    && pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
+
+# Install torch CPU (separate step to use PyTorch index, avoids 2GB CUDA build)
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir torch torchvision \
+        --index-url https://download.pytorch.org/whl/cpu
+
+# Install all remaining dependencies (torch already present, will be skipped)
+RUN pip install --no-cache-dir -r requirements.txt
 
 
 # ── Stage 2: Runtime ──────────────────────────────────────────────────────
@@ -24,20 +30,18 @@ RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 
 WORKDIR /app
 
-# Copy pre-built wheels from builder
-COPY --from=builder /wheels /wheels
-RUN pip install --no-cache-dir --find-links=/wheels /wheels/*.whl \
-    && rm -rf /wheels
+# Copy installed Python packages from builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application source
 COPY app/ ./app/
 
-# Model directory (bind-mounted at runtime or baked in)
+# Model directory (bind-mounted at runtime via docker-compose volumes)
 RUN mkdir -p models && chown appuser:appgroup models
 
 USER appuser
 
-# Uvicorn settings
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PORT=8000
