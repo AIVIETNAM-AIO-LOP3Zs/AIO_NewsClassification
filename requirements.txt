@@ -9,14 +9,11 @@ scikit-learn>=1.4.0
 joblib>=1.4.0
 numpy>=1.26.0
 
-# ── BERT backend (optional — uncomment to enable) ─────────────────────────
-# Install these when ACTIVE_MODELS includes "bert":
-#   pip install -r requirements-bert.txt
-# Or uncomment below:
-# torch>=2.2.0
-# transformers>=4.40.0
-# sentencepiece>=0.2.0     # required by some tokenisers (e.g. XLM-R, mBERT)
-# accelerate>=0.29.0       # optional: enables faster model loading
+# ── BERT backend ─────────────────────────────────────────────────────────
+# torch: installed via Dockerfile from pytorch CPU index (avoids 2GB CUDA build)
+transformers>=4.40.0
+sentencepiece>=0.2.0
+accelerate>=0.29.0
 
 # ── Optional: structured logging ──────────────────────────────────────────
 structlog>=24.1.0
