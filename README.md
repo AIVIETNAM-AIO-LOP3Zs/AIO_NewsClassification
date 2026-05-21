@@ -105,6 +105,7 @@ Tests use dummy model stubs — no real artifacts required.
 ```bash
 # Build & run
 docker compose up --build
+docker compose up api --build
 
 # Health check
 curl http://localhost:8000/api/v1/news/health
