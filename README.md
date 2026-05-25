@@ -12,7 +12,7 @@ Hệ thống phân loại tin tức sử dụng FastAPI và các mô hình học
   - `services/`: Chứa logic xử lý phân loại
 - `data/`: Dữ liệu và tài liệu về dataset.
 - `models/`: Thư mục chứa các mô hình đã huấn luyện (VD: BERT weights, TF-IDF pkl, ...)
-- `src/`: Các Jupyter notebooks (Training, Preprocessing, EDA)
+- `notebooks/`: Các Jupyter notebooks (Training, Preprocessing, EDA)
 - `docs/`: Chứa các tài liệu thiết kế và plan dự án.
 - `tests/`: Unit tests cho hệ thống.
 
