@@ -53,12 +53,11 @@ docker compose --profile ngrok up --build -d
 Nếu bạn cần debug trực tiếp và không muốn dùng Docker:
 
 ```bash
-# 1. Tạo và kích hoạt môi trường ảo
-python -m venv .venv
-source .venv/bin/activate  # (Windows: .venv\Scripts\activate)
+# 1. Cài đặt dependencies và tạo môi trường tự động bằng uv
+uv sync
 
-# 2. Cài đặt các thư viện cần thiết
-pip install -r requirements-dev.txt
+# 2. Kích hoạt môi trường ảo
+source .venv/bin/activate  # (Windows: .venv\Scripts\activate)
 
 # 3. Chạy server FastAPI
 uvicorn app.main:app --reload --port 8000
