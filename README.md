@@ -33,6 +33,9 @@ Hệ thống phân loại tin tức sử dụng FastAPI và các mô hình học
 ### Trường hợp 1: Chạy hệ thống KHÔNG có Ngrok (Local Only)
 Lựa chọn này sẽ không bật service Ngrok.
 ```bash
+# Chuẩn bị biến môi trường
+cp .env.example .env
+
 docker compose up --build -d
 ```
 - API nội bộ sẽ khả dụng ở: `http://localhost:8000`
@@ -41,6 +44,9 @@ docker compose up --build -d
 ### Trường hợp 2: Chạy hệ thống CÓ kèm Ngrok (Public API)
 Lựa chọn này sẽ bật cả backend và tự động cấu hình Ngrok để expose cổng `8000` ra public internet thông qua profile `ngrok`.
 ```bash
+# Chuẩn bị biến môi trường
+cp .env.example .env
+
 docker compose --profile ngrok up --build -d
 ```
 - Để lấy Public URL do Ngrok cung cấp, hãy truy cập vào Web Interface của Ngrok tại: **`http://localhost:4040`**. Tại đây bạn sẽ thấy một link dạng `https://<random-id>.ngrok-free.app`.
@@ -59,7 +65,10 @@ uv sync
 # 2. Kích hoạt môi trường ảo
 source .venv/bin/activate  # (Windows: .venv\Scripts\activate)
 
-# 3. Chạy server FastAPI
+# 3. Chuẩn bị biến môi trường
+cp .env.example .env
+
+# 4. Chạy server FastAPI
 uvicorn app.main:app --reload --port 8000
 ```
 
