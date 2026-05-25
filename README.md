@@ -1,128 +1,103 @@
-# News Classification API
+# AI News Classification API
 
-Industry-standard FastAPI service for Vietnamese news classification.
+Hệ thống phân loại tin tức sử dụng FastAPI và các mô hình học máy.
 
-## Architecture
+## Cấu trúc thư mục
 
-```
-app/
-├── api/v1/endpoints/news.py   ← REST endpoints (classify, batch, health)
-├── core/config.py             ← Pydantic Settings (env-driven)
-├── core/logging.py            ← Structured logging (structlog / stdlib)
-├── ml/model_handler.py        ← Singleton artifact loader + inference
-├── ml/processor.py            ← Text cleaning & tokenisation pipeline
-├── schemas/news.py            ← Pydantic request/response models
-├── services/classification.py ← Orchestration & business logic
-└── main.py                    ← FastAPI app + lifespan context
-```
-
-## Quick Start
-
-### 1. Create & activate virtualenv
-
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements-dev.txt
-```
-
-### 2. Configure environment
-
-```bash
-cp .env.example .env
-# Edit .env — set MODEL_NAME, VECTORIZER_NAME, LOG_FORMAT, etc.
-```
-
-### 3. Add trained model artifacts
-
-Place the following files in the `models/` directory:
-
-| File | Description |
-|---|---|
-| `news_classifier.pkl` | Trained sklearn classifier (joblib) |
-| `tfidf_vectorizer.pkl` | Fitted TfidfVectorizer (joblib) |
-| `label_encoder.pkl` | LabelEncoder (optional, joblib) |
-
-### 4. Run locally
-
-```bash
-uvicorn app.main:app --reload --port 8000
-```
-
-Open: <http://localhost:8000/docs>
+- `app/`: Source code chính của backend (FastAPI)
+  - `api/v1/`: Chứa các router API
+  - `core/`: Chứa các file cấu hình, logging
+  - `ml/`: Chứa mã xử lý ML/Inference
+  - `schemas/`: Chứa các Pydantic models
+  - `services/`: Chứa logic xử lý phân loại
+- `data/`: Dữ liệu và tài liệu về dataset.
+- `models/`: Thư mục chứa các mô hình đã huấn luyện (VD: BERT weights, TF-IDF pkl, ...)
+- `src/`: Các Jupyter notebooks (Training, Preprocessing, EDA)
+- `docs/`: Chứa các tài liệu thiết kế và plan dự án.
+- `tests/`: Unit tests cho hệ thống.
 
 ---
 
-## API Endpoints
+## 🚀 Hướng dẫn cài đặt và sử dụng bằng Docker (Khuyên dùng)
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/v1/news/health` | Health check & model status |
-| `GET` | `/api/v1/news/model/info` | Class names, threshold, version |
-| `POST` | `/api/v1/news/classify` | Classify a single article |
-| `POST` | `/api/v1/news/classify/batch` | Classify up to 32 articles |
+Để chạy hệ thống nhanh gọn nhất, chúng ta sẽ sử dụng Docker Compose. Có hai trường hợp phổ biến: Chạy hệ thống nội bộ (chỉ truy cập từ `localhost`) và Chạy hệ thống kèm Ngrok (để có public URL chia sẻ ra ngoài).
 
-### Example request
+### Bước 1: Chuẩn bị môi trường & Model
+1. Copy file `.env.example` thành `.env`
+   ```bash
+   cp .env.example .env
+   ```
+2. Nếu bạn muốn sử dụng Ngrok (Trường hợp 2), mở file `.env` và thêm chuỗi token của bạn vào biến `NGROK_AUTHTOKEN`. *(Lấy token tại [dashboard của Ngrok](https://dashboard.ngrok.com/get-started/your-authtoken))*
+3. Đảm bảo bạn đã đưa đầy đủ các file model đã train vào thư mục `models/`.
 
+### Trường hợp 1: Chạy hệ thống KHÔNG có Ngrok (Local Only)
+Lựa chọn này sẽ không bật service Ngrok.
+```bash
+docker compose up --build -d
+```
+- API nội bộ sẽ khả dụng ở: `http://localhost:8000`
+- API Documentation (Swagger): `http://localhost:8000/docs`
+
+### Trường hợp 2: Chạy hệ thống CÓ kèm Ngrok (Public API)
+Lựa chọn này sẽ bật cả backend và tự động cấu hình Ngrok để expose cổng `8000` ra public internet thông qua profile `ngrok`.
+```bash
+docker compose --profile ngrok up --build -d
+```
+- Để lấy Public URL do Ngrok cung cấp, hãy truy cập vào Web Interface của Ngrok tại: **`http://localhost:4040`**. Tại đây bạn sẽ thấy một link dạng `https://<random-id>.ngrok-free.app`.
+- Bạn có thể gửi request đến URL public đó hoàn toàn tương tự như khi gọi qua `localhost:8000`.
+
+---
+
+## 💻 Hướng dẫn chạy Native (Không dùng Docker)
+
+Nếu bạn cần debug trực tiếp và không muốn dùng Docker:
+
+```bash
+# 1. Tạo và kích hoạt môi trường ảo
+python -m venv .venv
+source .venv/bin/activate  # (Windows: .venv\Scripts\activate)
+
+# 2. Cài đặt các thư viện cần thiết
+pip install -r requirements-dev.txt
+
+# 3. Chạy server FastAPI
+uvicorn app.main:app --reload --port 8000
+```
+
+---
+
+## 📖 API Endpoints chính
+
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| `GET` | `/api/v1/news/health` | Kiểm tra trạng thái hệ thống và xem model nào đang load |
+| `GET` | `/api/v1/news/model/info` | Thông tin chi tiết của mô hình (version, labels, configs) |
+| `POST` | `/api/v1/news/classify` | Phân loại 1 bài báo đơn lẻ |
+| `POST` | `/api/v1/news/classify/batch` | Phân loại cùng lúc một danh sách các bài báo |
+
+**Ví dụ gọi API phân loại bài viết (cURL):**
 ```bash
 curl -X POST http://localhost:8000/api/v1/news/classify \
   -H "Content-Type: application/json" \
-  -d '{"title": "Bóng đá Việt Nam", "content": "Đội tuyển Việt Nam giành chiến thắng ấn tượng."}'
+  -d '{
+        "title": "Kinh tế thị trường", 
+        "content": "Thị trường chứng khoán hôm nay có nhiều biến động..."
+      }'
 ```
 
-### Example response
-
+**Ví dụ cấu trúc dữ liệu trả về:**
 ```json
 {
   "status": "success",
   "model_version": "news_classifier",
   "result": {
-    "label": "the_thao",
-    "confidence": 0.923,
+    "label": "kinh_te",
+    "confidence": 0.89,
     "probabilities": {
-      "the_thao": 0.923,
-      "kinh_te": 0.031,
-      "chinh_tri": 0.046
+      "kinh_te": 0.89,
+      "the_thao": 0.05
     },
     "below_threshold": false
   }
 }
 ```
-
----
-
-## Running Tests
-
-```bash
-pytest -v
-```
-
-Tests use dummy model stubs — no real artifacts required.
-
----
-
-## Docker
-
-```bash
-# Build & run
-docker compose up --build
-
-# Health check
-curl http://localhost:8000/api/v1/news/health
-```
-
----
-
-## Configuration Reference
-
-All options are read from `.env` (see `.env.example`):
-
-| Key | Default | Description |
-|-----|---------|-------------|
-| `MODEL_DIR` | `models` | Directory containing trained artifacts |
-| `MODEL_NAME` | `news_classifier.pkl` | Classifier artifact filename |
-| `VECTORIZER_NAME` | `tfidf_vectorizer.pkl` | Vectorizer artifact filename |
-| `LABEL_ENCODER_NAME` | `label_encoder.pkl` | Label encoder (optional) |
-| `CONFIDENCE_THRESHOLD` | `0.5` | Minimum confidence to flag result as reliable |
-| `MAX_TEXT_LENGTH` | `10000` | Maximum input characters |
-| `LOG_LEVEL` | `INFO` | Python log level |
-| `LOG_FORMAT` | `json` | `json` (production) or `text` (development) |
