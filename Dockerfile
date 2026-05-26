@@ -3,20 +3,19 @@ FROM python:3.11-slim AS builder
 
 WORKDIR /build
 
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 # Install build tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY pyproject.toml ./
 
-# Install torch CPU (separate step to use PyTorch index, avoids 2GB CUDA build)
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir torch torchvision \
-        --index-url https://download.pytorch.org/whl/cpu
-
-# Install all remaining dependencies (torch already present, will be skipped)
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies using uv into system environment
+# uv automatically respects the tool.uv.sources in pyproject.toml for torch CPU
+RUN uv pip install --system -r pyproject.toml
 
 
 # ── Stage 2: Runtime ──────────────────────────────────────────────────────

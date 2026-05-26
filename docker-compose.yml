@@ -16,17 +16,20 @@ services:
     environment:
       LOG_FORMAT: "text"   # Human-readable logs for local dev
       DEBUG: "true"
+      HF_HOME: "/tmp/huggingface"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/news/health')"]
       interval: 10s
       timeout: 5s
-      retries: 3
-      start_period: 5s
+      retries: 5
+      start_period: 120s
 
   ngrok:
     image: ngrok/ngrok:latest
     container_name: news_classifier_ngrok
+    profiles:
+      - ngrok
     restart: unless-stopped
     command:
       - "http"
